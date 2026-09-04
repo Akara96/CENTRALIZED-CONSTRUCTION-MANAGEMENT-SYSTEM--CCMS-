@@ -1,0 +1,206 @@
+﻿<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ dataset.title }} - {{ dataset.project_label }}</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, Helvetica, sans-serif;
+            background: #f4f6f8;
+            color: #111827;
+        }
+        .tooltor {
+            position: sticky;
+            top: 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 18px;
+            background: #0f172a;
+            color: #fff;
+            z-index: 10;
+        }
+        .btn {
+            border: 0;
+            border-radius: 4px;
+            padding: 8px 12px;
+            color: #fff;
+            background: #2563eb;
+            cursor: pointer;
+            font-weight: 700;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .btn.secondary { background: #475569; }
+        .sheet {
+            width: min(1120px, calc(100% - 36px));
+            margin: 18px auto;
+            background: #fff;
+            border: 1px solid #d7dde6;
+            box-shadow: 0 12px 32px rgba(15, 23, 42, .12);
+            padding: 28px;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            gap: 18px;
+            border-bottom: 3px solid #0f172a;
+            padding-bottom: 14px;
+            margin-bottom: 18px;
+        }
+        .title {
+            font-size: 24px;
+            font-weight: 900;
+            margin: 0 0 6px;
+            text-transform: uppercase;
+        }
+        .subtitle {
+            color: #475569;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+        .brand {
+            text-align: right;
+            font-weight: 900;
+            color: #0f172a;
+            line-height: 1.25;
+        }
+        .summary {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 10px;
+            margin-bottom: 18px;
+        }
+        .summary-item {
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            padding: 10px;
+            background: #f8fafc;
+        }
+        .summary-label {
+            display: block;
+            color: #64748b;
+            font-size: 11px;
+            font-weight: 800;
+            text-transform: uppercase;
+        }
+        .summary-value {
+            display: block;
+            margin-top: 5px;
+            color: #0f172a;
+            font-size: 16px;
+            font-weight: 900;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+        }
+        th, td {
+            border: 1px solid #dbe3ef;
+            padding: 8px;
+            text-align: left;
+            vertical-align: top;
+        }
+        th {
+            background: #0f172a;
+            color: #fff;
+            font-size: 11px;
+            text-transform: uppercase;
+        }
+        tbody tr:nth-child(even) td { background: #f8fafc; }
+        .footer {
+            margin-top: 18px;
+            display: flex;
+            justify-content: space-between;
+            color: #64748b;
+            font-size: 11px;
+            border-top: 1px solid #e2e8f0;
+            padding-top: 10px;
+        }
+        @media print {
+            body { background: #fff; }
+            .tooltor { display: none; }
+            .sheet {
+                width: 100%;
+                margin: 0;
+                border: 0;
+                box-shadow: none;
+                padding: 0;
+            }
+            @page { size: landscape; margin: 12mm; }
+        }
+    </style>
+</head>
+<body>
+    <div class="tooltor">
+        <div>{{ dataset.title }} | {{ dataset.project_label }} | {{ dataset.period }}</div>
+        <div>
+            <button class="btn" onclick="window.print()">Print / Save PDF</button>
+            <a class="btn secondary" href="{% url 'dashboard' %}">Back to Dashboard</a>
+        </div>
+    </div>
+    <main class="sheet">
+        <div class="header">
+            <div>
+                <h1 class="title">{{ dataset.title }}</h1>
+                <div class="subtitle">
+                    Project: {{ dataset.project_label }}<br>
+                    Period: {{ dataset.period }}<br>
+                    Generated: {{ generated_at|date:"Y-m-d H:i" }}
+                </div>
+            </div>
+            <div class="brand">
+                CENTRALIZED CONSTRUCTION<br>
+                MANAGEMENT SYSTEM<br>
+                CCMS REPORTING
+            </div>
+        </div>
+
+        <section class="summary">
+            {% for key, value in dataset.summary.items %}
+            <div class="summary-item">
+                <span class="summary-label">{{ key }}</span>
+                <span class="summary-value">{{ value }}</span>
+            </div>
+            {% endfor %}
+        </section>
+
+        <table>
+            <thead>
+                <tr>
+                    {% for header in dataset.headers %}
+                    <th>{{ header }}</th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in dataset.rows %}
+                <tr>
+                    {% for cell in row %}
+                    <td>{{ cell }}</td>
+                    {% endfor %}
+                </tr>
+                {% empty %}
+                <tr><td colspan="{{ dataset.headers|length }}">No data for selected filter.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <div class="footer">
+            <span>CCMS Phase I Reporting</span>
+            <span>Print format supports browser Save as PDF.</span>
+        </div>
+    </main>
+    {% if auto_print %}
+    <script>
+        window.addEventListener('load', () => window.print());
+    </script>
+    {% endif %}
+</body>
+</html>
+
+

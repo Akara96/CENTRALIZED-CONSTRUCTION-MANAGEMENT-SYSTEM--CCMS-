@@ -1,0 +1,334 @@
+﻿{% load static %}
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CCMS - Schedule & Gantt Chart</title>
+    <link rel="stylesheet" href="{% static 'core/css/styles.css' %}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            min-height: 100vh;
+            font-family: system-ui, -apple-system, sans-serif;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 30px 20px;
+        }
+        .header {
+            background: white;
+            padding: 20px 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .header h1 {
+            color: #0f172a;
+            font-size: 28px;
+            font-weight: 700;
+            margin: 0;
+        }
+        .tock-btn {
+            background: #2563eb;
+            color: white;
+            padding: 10px 24px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+        }
+        .tock-btn:hover {
+            background: #1d4ed8;
+        }
+        .content-grid {
+            display: grid;
+            grid-template-columns: 400px 1fr;
+            gap: 30px;
+        }
+        @media (max-width: 1024px) {
+            .content-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        .panel {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        .panel-title {
+            color: #0f172a;
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid #e2e8f0;
+        }
+        .form-group {
+            margin-bottom: 16px;
+        }
+        .form-group label {
+            display: block;
+            color: #334155;
+            font-weight: 600;
+            margin-bottom: 6px;
+            font-size: 14px;
+        }
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 10px 14px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: #2563eb;
+        }
+        .btn-submit {
+            width: 100%;
+            background: #2563eb;
+            color: white;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .btn-submit:hover {
+            background: #1d4ed8;
+        }
+        .schedule-list {
+            margin-top: 20px;
+        }
+        .schedule-item {
+            padding: 14px;
+            background: #f8fafc;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            border-left: 4px solid #2563eb;
+        }
+        .schedule-item h4 {
+            color: #0f172a;
+            margin: 0 0 8px 0;
+            font-size: 15px;
+        }
+        .schedule-item p {
+            color: #64748b;
+            margin: 4px 0;
+            font-size: 13px;
+        }
+        .gantt-container {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            min-height: 500px;
+        }
+        .gantt-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .gantt-row {
+            display: grid;
+            grid-template-columns: 250px 1fr;
+            gap: 20px;
+            align-items: center;
+        }
+        .gantt-label {
+            font-size: 14px;
+            font-weight: 600;
+            color: #0f172a;
+        }
+        .gantt-tor-container {
+            height: 36px;
+            background: #f1f5f9;
+            border-radius: 6px;
+            position: relative;
+            overflow: hidden;
+        }
+        .gantt-tor {
+            position: absolute;
+            top: 4px;
+            bottom: 4px;
+            background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%);
+            border-radius: 4px;
+            transition: all 0.3s ease;
+        }
+        .gantt-tor:hover {
+            transform: scaleY(1.1);
+        }
+        .gantt-tor.completed {
+            background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+        }
+        .gantt-tor.delayed {
+            background: linear-gradient(135deg, #ef4444 0%, #f87171 100%);
+        }
+        .gantt-tor.in-progress {
+            background: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%);
+        }
+        .progress-fill {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 4px 0 0 4px;
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-top: 6px;
+        }
+        .status-badge.not-started {
+            background: #e2e8f0;
+            color: #475569;
+        }
+        .status-badge.in-progress {
+            background: #fef3c7;
+            color: #92400e;
+        }
+        .status-badge.completed {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        .status-badge.delayed {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Schedule & Gantt Chart</h1>
+            <a href="{% url 'dashboard' %}" class="tock-btn">â† Kemtoli ke Dashboard</a>
+        </div>
+
+        <div class="content-grid">
+            <!-- Panel Kiri: Add & List Schedule -->
+            <div class="panel">
+                <h2 class="panel-title">Add Schedule New</h2>
+                <form method="post" action="{% url 'add_schedule' %}">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <label for="project_id">Project</label>
+                        <select id="project_id" name="project_id" required>
+                            <option value="">Select Project...</option>
+                            {% for project in projects %}
+                            <option value="{{ project.id }}" {% if selected_project_id == project.id|stringformat:"s" %}selected{% endif %}>{{ project.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="activity_code">Activity Code</label>
+                        <input type="text" id="activity_code" name="activity_code" placeholder="A-001">
+                    </div>
+                    <div class="form-group">
+                        <label for="activity_name">Activity Name</label>
+                        <input type="text" id="activity_name" name="activity_name" required placeholder="Example: Building Foundation">
+                    </div>
+                    <div class="form-group">
+                        <label for="planned_start">Date Mulai (Rencana)</label>
+                        <input type="date" id="planned_start" name="planned_start">
+                    </div>
+                    <div class="form-group">
+                        <label for="planned_finish">Date Completed (Rencana)</label>
+                        <input type="date" id="planned_finish" name="planned_finish">
+                    </div>
+                    <div class="form-group">
+                        <label for="duration_planned">Durasi (Hari)</label>
+                        <input type="number" id="duration_planned" name="duration_planned" placeholder="10">
+                    </div>
+                    <div class="form-group">
+                        <label for="progress">Progress (%)</label>
+                        <input type="number" id="progress" name="progress" min="0" max="100" placeholder="0">
+                    </div>
+                    <div class="form-group">
+                        <label for="status">Status</label>
+                        <select id="status" name="status">
+                            <option value="NOT_STARTED">Not Started</option>
+                            <option value="IN_PROGRESS">In Progress</option>
+                            <option value="COMPLETED">Completed</option>
+                            <option value="DELAYED">Delayed</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn-submit">Add Schedule</button>
+                </form>
+
+                <div class="schedule-list">
+                    <h3 style="color: #0f172a; margin: 30px 0 16px 0; font-size: 18px;">List Ativonede</h3>
+                    {% for s in schedules %}
+                    <div class="schedule-item">
+                        <h4>{{ s.activity_name }} {% if s.activity_code %}<span style="font-size: 12px; color: #64748b;">({{ s.activity_code }})</span>{% endif %}</h4>
+                        <p><strong>Project:</strong> {{ s.project.name }}</p>
+                        <p><strong>Date:</strong> {{ s.planned_start|date:"d/m/Y" }} - {{ s.planned_finish|date:"d/m/Y" }}</p>
+                        <p><strong>Progress:</strong> {{ s.progress }}%</p>
+                        <span class="status-badge {{ s.status|lower }}">
+                            {{ s.get_status_display }}
+                        </span>
+                        <form method="post" action="{% url 'update_schedule_progress' s.id %}" style="margin-top: 12px;">
+                            {% csrf_token %}
+                            <div style="display: flex; gap: 10px;">
+                                <input type="number" name="progress" placeholder="Progress %" value="{{ s.progress }}" min="0" max="100" style="flex: 1; padding: 6px 10px; border: 1px solid #e2e8f0; border-radius: 6px;">
+                                <select name="status" style="flex: 1; padding: 6px 10px; border: 1px solid #e2e8f0; border-radius: 6px;">
+                                    <option value="NOT_STARTED" {% if s.status == "NOT_STARTED" %}selected{% endif %}>Not Started</option>
+                                    <option value="IN_PROGRESS" {% if s.status == "IN_PROGRESS" %}selected{% endif %}>In Progress</option>
+                                    <option value="COMPLETED" {% if s.status == "COMPLETED" %}selected{% endif %}>Completed</option>
+                                    <option value="DELAYED" {% if s.status == "DELAYED" %}selected{% endif %}>Delayed</option>
+                                </select>
+                                <button type="submit" style="background: #2563eb; color: white; border: none; padding: 6px 16px; border-radius: 6px; cursor: pointer; font-weight: 600;">Update</button>
+                            </div>
+                        </form>
+                    </div>
+                    {% empty %}
+                    <p style="color: #64748b; text-align: center; padding: 20px;">No schedule. Add a new schedule!</p>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Panel Kanan: Gantt Chart -->
+            <div class="gantt-container">
+                <h2 class="panel-title">Gantt Chart</h2>
+                <div class="gantt-grid" id="ganttChart">
+                    {% if schedules %}
+                    {% for s in schedules %}
+                    <div class="gantt-row">
+                        <div class="gantt-label">{{ s.activity_name }}</div>
+                        <div class="gantt-tor-container">
+                            <div class="gantt-tor {{ s.status|lower }}" 
+                                 style="left: {{ forloop.counter0|add:10 }}%; width: 80%;">
+                                <div class="progress-fill" style="width: {{ s.progress }}%;"></div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                    {% else %}
+                    <div style="text-align: center; padding: 80px; color: #64748b;">
+                        
+                        <p>No schedule data to show in the Gantt chart.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+
+
+
+
