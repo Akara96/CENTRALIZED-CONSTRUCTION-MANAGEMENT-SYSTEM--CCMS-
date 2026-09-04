@@ -14,6 +14,33 @@ A comprehensive, web-based platform designed to streamline and digitize construc
 - **Meeting & Action Tracking**: Record meeting minutes (Site, Management, Design, etc.) and track assigned action items to closure.
 - **Risk Register**: Identify, assess, and mitigate project risks.
 
+## 📊 Dashboard Overview
+
+The CCMS Dashboard provides a centralized, real-time view of project health:
+- **Progress Metrics**: Visualize overall project completion, including specific civil, architectural, and MEP progress.
+- **Financial Summaries**: Track Budget vs. Actual Cost, Invoice statuses, and Pending Variation Orders (VO).
+- **Approval Center**: Quick access to pending approvals for Reports, Documents, and Finances, tailored to the logged-in user's role.
+- **HSE & Quality Snapshot**: Overview of recent incidents, open NCRs, and site safety metrics.
+- **Recent Activities**: A feed of the latest daily reports, uploaded documents, and meeting minutes.
+
+## 🔄 System Workflow
+
+1. **Project Setup & Planning**
+   - Admin/HQ creates a new project and assigns contractors, consultants, and the internal team.
+   - Initial budgets, Master Schedules, and Bill of Quantities (BoQ) are uploaded.
+2. **Execution & Daily Operations (Site Level)**
+   - Site Engineers submit **Daily Reports** detailing manpower, equipment, and material usage.
+   - Supervisors and QA/QC conduct site inspections and log **HSE Reports**.
+   - Logistics update material stock and receive deliveries.
+3. **Review & Multi-Tier Approvals**
+   - Documents (Shop Drawings, RFIs) and Progress Reports go through a structured approval flow: `Reviewer` ➡️ `Manager` ➡️ `Consultant` ➡️ `HQ Approval`.
+   - Finance validates expenses and processes Invoices/VOs based on field data.
+4. **Monitoring & Handover**
+   - HQ Directors monitor the portfolio via the high-level dashboard.
+   - Final progress claims are verified against approved BOQs and Daily Reports.
+   - Project handover and document archiving.
+
+
 ## 🛠️ Technology Stack
 
 - **Backend**: Python / Django
